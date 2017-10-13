@@ -1,17 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
-using System.Text;
+using System.IO;
+using System.Collections;
+
+using Steamworks;
+using UnityEngine;
+
 using Rocket.API;
 using Rocket.Core.Logging;
 using Rocket.Core.Plugins;
-
-
-using Rocket.Unturned.Chat;
-using Steamworks;
-using Rocket.Unturned.Player;
+using Rocket.Unturned;
 using Rocket.Unturned.Events;
-using System.IO;
+using Rocket.Unturned.Player;
+using Rocket.Unturned.Chat;
+
 
 /// <summary>
 /// Basic Team Deathmatch plugin for Rocket https://github.com/RocketMod/Rocket
@@ -21,7 +23,7 @@ namespace TDM
 {
 	public class TDM : RocketPlugin
 	{
-		public CSettings settings;	//initialized in LoadSettings
+		public CSettings settings;  //initialized in LoadSettings
 		public CStatus status;      //initialized in LoadStatus
 		public DateTime lastCalled;
 
@@ -31,22 +33,32 @@ namespace TDM
 		{
 			instance = this;
 			lastCalled = DateTime.Now;
+			
+			/*XmlSerializer xs = new XmlSerializer(typeof(CSettings));
+			TextWriter tw = new StreamWriter(@"Plugins\TDMsettings.xml");
+			settings = new CSettings();
+			xs.Serialize(tw, settings);
+			tw.Flush();
+			tw.Close();
+			settings = null;*/
+
 			LoadSettings();
 			LoadStatus();
 			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", settings.LogFileName);
 			UnturnedPlayerEvents.OnPlayerDeath += UnturnedPlayerEvents_OnPlayerDeath;
+			U.Events.OnPlayerConnected += UnturnedEvents_OnPlayerConnected;
+			U.Events.OnPlayerDisconnected += UnturnedEvents_OnPlayerDisconnected;
 
-			/*XmlSerializer xs = new XmlSerializer(typeof(CSettings));
-			TextWriter tw = new StreamWriter(@"Plugins\TDMsettings.xml");
-			xs.Serialize(tw, settings);
-			tw.Flush();
-			tw.Close();*/
+
 		}
 
 		protected override void Unload()
 		{
 			LogThis(DateTime.Now.ToString("s") + " TDM Unloaded", settings.LogFileName);
 			UnturnedPlayerEvents.OnPlayerDeath -= UnturnedPlayerEvents_OnPlayerDeath;
+			U.Events.OnPlayerConnected -= UnturnedEvents_OnPlayerConnected;
+			U.Events.OnPlayerDisconnected -= UnturnedEvents_OnPlayerDisconnected;
+
 			instance = null;
 			settings = null;
 			status = null;
@@ -76,9 +88,41 @@ namespace TDM
 			}
 			catch (Exception ex)
 			{
-				Logger.LogException(ex, ex.Message);
+				Rocket.Core.Logging.Logger.LogException(ex, ex.Message);
 			}
 		}
+
+
+		private void UnturnedEvents_OnPlayerConnected(UnturnedPlayer player)
+		{
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";", settings.FragLogFileName);
+
+			if (player.SteamGroupID.m_SteamID == settings.TeamASteamId)
+			{
+				UnturnedChat.Say(player.CharacterName + " has joined team A");
+			}
+			else if (player.SteamGroupID.m_SteamID == settings.TeamBSteamId)
+			{
+				UnturnedChat.Say(player.CharacterName + " has joined team B");
+			}
+			else
+			{
+				UnturnedChat.Say(player.CharacterName + " haven't set their team setting correctly."
+								+ (settings.kickPlayerWithInvalidTeam ? (" Kicking in " + settings.kickDelaySeconds.ToString()) : ""));
+				if (settings.kickPlayerWithInvalidTeam)
+				{
+					StartCoroutine(KickPlayer(player, settings.kickDelaySeconds, "Please select one of these teams as primary in you Unturned character settings: "
+						+ settings.TeamASteamUri + "\n" + settings.TeamBSteamUri));
+				}
+			}
+		}
+
+
+		private void UnturnedEvents_OnPlayerDisconnected(UnturnedPlayer player)
+		{
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", settings.FragLogFileName);
+		}
+
 
 		public void SaveStatus()
 		{
@@ -97,18 +141,19 @@ namespace TDM
 				StreamReader sr = new StreamReader(settings.StatusFileName);
 				status = (CStatus)xs.Deserialize(sr);
 				sr.Close();
-			} catch (Exception ex)
-			{
-				Logger.LogException(ex, ex.Message);
 			}
-			
+			catch (Exception ex)
+			{
+				Rocket.Core.Logging.Logger.LogException(ex, ex.Message);
+			}
+
 			if (status == null)
 			{
 				LogThis(DateTime.Now.ToString("s") + " No status loaded - using default", settings.LogFileName);
 				status = new CStatus();
 				SaveStatus();
 			}
-			
+
 		}
 
 		public void LoadSettings()
@@ -122,40 +167,16 @@ namespace TDM
 			}
 			catch (Exception ex)
 			{
-				Logger.LogException(ex, ex.Message);
+				Rocket.Core.Logging.Logger.LogException(ex, ex.Message);
 			}
-			
+
 			if (settings == null)
 			{
 				LogThis(DateTime.Now.ToString("s") + " No settings loaded - using default", settings.LogFileName);
 				settings = new CSettings();
 			}
-			
+
 		}
-
-		/*private void checkChat()
-		{
-			if ((DateTime.Now - this.lastCalled).TotalSeconds > 60)
-			{
-				SendChat();
-				this.lastCalled = DateTime.Now;
-			}
-		}
-
-		public void SendChat()
-		{
-			UnturnedChat.Say("Hello! FixedUpdate was called " + callCount.ToString() + " times as of " + DateTime.Now.ToUniversalTime());
-		}
-
-		public void FixedUpdate()
-		{
-			callCount++;
-
-			if (this.State == PluginState.Loaded)
-				this.checkChat();
-		}*/
-
-
 
 		void FixedUpdate()
 		{
@@ -182,7 +203,7 @@ namespace TDM
 				lastCalled = DateTime.Now;
 			}
 		}
-		
+
 		protected void LogThis(String message, string filename)
 		{
 			try
@@ -194,7 +215,25 @@ namespace TDM
 			}
 			catch (Exception ex)
 			{
-				Logger.LogException(ex, ex.Message);
+				Rocket.Core.Logging.Logger.LogException(ex, ex.Message);
+			}
+		}
+
+		public IEnumerator KickPlayer(UnturnedPlayer player, uint delaySeconds, string reason)
+		{
+			if (player.HasPermission("kick.ignore"))
+			{
+				yield break;
+			}
+			else if (delaySeconds <= 0f)
+			{
+				yield return new WaitForSeconds(1f);
+				player.Kick(reason);
+			}
+			else
+			{
+				yield return new WaitForSeconds(delaySeconds);
+				player.Kick(reason);
 			}
 		}
 	}

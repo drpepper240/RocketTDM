@@ -45,10 +45,10 @@ namespace TDM
 
 		public void Execute(IRocketPlayer caller, string[] command)
 		{
-			UnturnedChat.Say("Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"));
-			UnturnedChat.Say("SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString());
-			UnturnedChat.Say("START TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.startTime - DateTime.Now), true, true));
-			UnturnedChat.Say("END TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.endTime - DateTime.Now), true, true));
+			UnturnedChat.Say(caller, "Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"));
+			UnturnedChat.Say(caller, "SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString(), Color.red);
+			UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.startTime - DateTime.Now), true, true));
+			UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.endTime - DateTime.Now), true, true));
 		}
 
 		string TimeSpanToHumanReadableString(TimeSpan span, bool inAgo = false, bool seconds = false)

@@ -17,8 +17,14 @@ namespace TDM
 		public string StatusFileName = @"Plugins\TDMstatus.xml";
 
 		//Teams
-		public UInt64 TeamASteamId = 103582791457241638; //http://steamcommunity.com/groups/YARR-240
-		public UInt64 TeamBSteamId = 103582791457591564; //http://steamcommunity.com/groups/YARR-240-B
+		public string TeamASteamUri = @"http://steamcommunity.com/groups/YARR-240";
+		public UInt64 TeamASteamId = 103582791457241638;
+
+		public string TeamBSteamUri = @"http://steamcommunity.com/groups/YARR-240-B";
+		public UInt64 TeamBSteamId = 103582791457591564;
+		
+		public bool kickPlayerWithInvalidTeam = true;
+		public UInt32 kickDelaySeconds = 10;
 
 		//Time to start TDM (= set status.isActive to true and back again automatically)
 		public DateTime startTime = DateTime.MinValue;
