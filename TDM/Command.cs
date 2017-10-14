@@ -29,7 +29,7 @@ namespace TDM
 
 		public string Syntax
 		{
-			get { return "Usage: /tdm"; }
+			get { return "Usage: /tdm [A | B]"; }
 		}
 
 		public List<string> Aliases
@@ -45,10 +45,47 @@ namespace TDM
 
 		public void Execute(IRocketPlayer caller, string[] command)
 		{
-			UnturnedChat.Say(caller, "Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"));
-			UnturnedChat.Say(caller, "SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString(), Color.red);
-			UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.startTime - DateTime.Now), true, true));
-			UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.endTime - DateTime.Now), true, true));
+			if (TDM.instance == null)
+			{
+				UnturnedChat.Say("Something's wrong with TDM plugin!", Color.red);
+				return;
+			}
+
+			if (command == null || command.Length == 0)
+			{
+				UnturnedChat.Say(caller, "Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"));
+				UnturnedChat.Say(caller, "SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString(), Color.red);
+				UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.startTime - DateTime.Now), true, true));
+				UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.endTime - DateTime.Now), true, true));
+			}
+			else if (command.Length == 1 && (command.ElementAt(0) == "a" || command.ElementAt(0) == "A"))
+			{
+				UnturnedChat.Say(caller, "Team A score: " + TDM.instance.status.teamAScore.ToString(), Color.red);
+				string playerString = "";
+				if (TDM.instance.playerList != null && TDM.instance.settings != null)
+					foreach (PlayerListItem i in TDM.instance.playerList)
+					{
+						if (i.teamSteamID == TDM.instance.settings.TeamASteamId)
+							playerString = playerString + i.characterName + ", ";
+					}
+				UnturnedChat.Say(caller, "Team A players: " + playerString);
+			}
+			else if (command.Length == 1 && (command.ElementAt(0) == "b" || command.ElementAt(0) == "B"))
+			{
+				UnturnedChat.Say(caller, "Team B score: " + TDM.instance.status.teamBScore.ToString(), Color.red);
+				string playerString = "";
+				if (TDM.instance.playerList != null && TDM.instance.settings != null)
+					foreach (PlayerListItem i in TDM.instance.playerList)
+					{
+						if (i.teamSteamID == TDM.instance.settings.TeamBSteamId)
+							playerString = playerString + i.characterName + ", ";
+					}
+				UnturnedChat.Say(caller, "Team B players: " + playerString);
+			}
+			else
+			{
+				UnturnedChat.Say(caller, "Unknown parameter");
+			}
 		}
 
 		string TimeSpanToHumanReadableString(TimeSpan span, bool inAgo = false, bool seconds = false)
@@ -74,7 +111,9 @@ namespace TDM
 						res = "in " + res;
 					else
 						res = res + " ago";
-				} else {
+				}
+				else
+				{
 					if (span.TotalSeconds < 0)
 						res = "-" + res;
 				}

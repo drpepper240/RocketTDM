@@ -2,6 +2,7 @@
 using System.Xml.Serialization;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
 
 using Steamworks;
 using UnityEngine;
@@ -29,11 +30,16 @@ namespace TDM
 
 		public static TDM instance;
 
+		public List<PlayerListItem> playerList;
+
+
 		protected override void Load()
 		{
 			instance = this;
 			lastCalled = DateTime.Now;
-			
+
+			playerList = new List<PlayerListItem>();
+
 			/*XmlSerializer xs = new XmlSerializer(typeof(CSettings));
 			TextWriter tw = new StreamWriter(@"Plugins\TDMsettings.xml");
 			settings = new CSettings();
@@ -52,6 +58,7 @@ namespace TDM
 
 		}
 
+
 		protected override void Unload()
 		{
 			LogThis(DateTime.Now.ToString("s") + " TDM Unloaded", settings.LogFileName);
@@ -62,7 +69,9 @@ namespace TDM
 			instance = null;
 			settings = null;
 			status = null;
+			playerList = null;
 		}
+
 
 		private void UnturnedPlayerEvents_OnPlayerDeath(UnturnedPlayer player, SDG.Unturned.EDeathCause cause, SDG.Unturned.ELimb limb, CSteamID murderer)
 		{
@@ -95,7 +104,9 @@ namespace TDM
 
 		private void UnturnedEvents_OnPlayerConnected(UnturnedPlayer player)
 		{
-			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";", settings.FragLogFileName);
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", settings.FragLogFileName);
+
+			playerList.Add(new PlayerListItem(player.CharacterName, player.CSteamID.m_SteamID, player.SteamGroupID.m_SteamID));
 
 			if (player.SteamGroupID.m_SteamID == settings.TeamASteamId)
 			{
@@ -108,19 +119,26 @@ namespace TDM
 			else
 			{
 				UnturnedChat.Say(player.CharacterName + " haven't set their team setting correctly."
-								+ (settings.kickPlayerWithInvalidTeam ? (" Kicking in " + settings.kickDelaySeconds.ToString()) : ""));
+								+ (settings.kickPlayerWithInvalidTeam ? (" Kicking in " + settings.kickDelaySeconds.ToString()) + " seconds" : ""));
 				if (settings.kickPlayerWithInvalidTeam)
 				{
-					StartCoroutine(KickPlayer(player, settings.kickDelaySeconds, "Please select one of these teams as primary in you Unturned character settings: "
-						+ settings.TeamASteamUri + "\n" + settings.TeamBSteamUri));
+					StartCoroutine(KickPlayer(player, settings.kickDelaySeconds, "   To play on this server please select one of these groups as primary in your Unturned settings (Survivors -> Group -> Group):\n"
+						+ settings.TeamASteamUri + "    " + settings.TeamBSteamUri));
 				}
 			}
 		}
 
 
+		//private static bool hasSpecificId(UInt64 steamID, PlayerListItem item)
+		//{
+		//	return (item.steamID == steamID);
+		//}
+
+
 		private void UnturnedEvents_OnPlayerDisconnected(UnturnedPlayer player)
 		{
 			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", settings.FragLogFileName);
+			playerList.RemoveAll(item => item.steamID == player.CSteamID.m_SteamID);
 		}
 
 
@@ -132,6 +150,7 @@ namespace TDM
 			tw.Flush();
 			tw.Close();
 		}
+
 
 		public void LoadStatus()
 		{
@@ -156,6 +175,7 @@ namespace TDM
 
 		}
 
+
 		public void LoadSettings()
 		{
 			XmlSerializer xs = new XmlSerializer(typeof(CSettings));
@@ -177,6 +197,7 @@ namespace TDM
 			}
 
 		}
+
 
 		void FixedUpdate()
 		{
@@ -204,6 +225,7 @@ namespace TDM
 			}
 		}
 
+
 		protected void LogThis(String message, string filename)
 		{
 			try
@@ -218,6 +240,7 @@ namespace TDM
 				Rocket.Core.Logging.Logger.LogException(ex, ex.Message);
 			}
 		}
+
 
 		public IEnumerator KickPlayer(UnturnedPlayer player, uint delaySeconds, string reason)
 		{
