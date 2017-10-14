@@ -1,11 +1,8 @@
 ﻿using Rocket.API;
 using Rocket.Unturned.Chat;
-using SDG.Unturned;
-using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace TDM
@@ -55,17 +52,17 @@ namespace TDM
 			{
 				UnturnedChat.Say(caller, "Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"));
 				UnturnedChat.Say(caller, "SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString(), Color.red);
-				UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.startTime - DateTime.Now), true, true));
-				UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.settings.endTime - DateTime.Now), true, true));
+				UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.Configuration.Instance.startTime - DateTime.Now), true, true));
+				UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.Configuration.Instance.endTime - DateTime.Now), true, true));
 			}
 			else if (command.Length == 1 && (command.ElementAt(0) == "a" || command.ElementAt(0) == "A"))
 			{
 				UnturnedChat.Say(caller, "Team A score: " + TDM.instance.status.teamAScore.ToString(), Color.red);
 				string playerString = "";
-				if (TDM.instance.playerList != null && TDM.instance.settings != null)
+				if (TDM.instance.playerList != null && TDM.instance.Configuration.Instance != null)
 					foreach (PlayerListItem i in TDM.instance.playerList)
 					{
-						if (i.teamSteamID == TDM.instance.settings.TeamASteamId)
+						if (i.teamSteamID == TDM.instance.Configuration.Instance.TeamASteamId)
 							playerString = playerString + i.characterName + ", ";
 					}
 				UnturnedChat.Say(caller, "Team A players: " + playerString);
@@ -74,10 +71,10 @@ namespace TDM
 			{
 				UnturnedChat.Say(caller, "Team B score: " + TDM.instance.status.teamBScore.ToString(), Color.red);
 				string playerString = "";
-				if (TDM.instance.playerList != null && TDM.instance.settings != null)
+				if (TDM.instance.playerList != null && TDM.instance.Configuration.Instance != null)
 					foreach (PlayerListItem i in TDM.instance.playerList)
 					{
-						if (i.teamSteamID == TDM.instance.settings.TeamBSteamId)
+						if (i.teamSteamID == TDM.instance.Configuration.Instance.TeamBSteamId)
 							playerString = playerString + i.characterName + ", ";
 					}
 				UnturnedChat.Say(caller, "Team B players: " + playerString);

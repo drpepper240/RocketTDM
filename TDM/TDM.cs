@@ -22,9 +22,8 @@ using Rocket.Unturned.Chat;
 
 namespace TDM
 {
-	public class TDM : RocketPlugin
+	public class TDM : RocketPlugin <Configuration>
 	{
-		public CSettings settings;  //initialized in LoadSettings
 		public CStatus status;      //initialized in LoadStatus
 		public DateTime lastCalled;
 
@@ -37,20 +36,10 @@ namespace TDM
 		{
 			instance = this;
 			lastCalled = DateTime.Now;
-
 			playerList = new List<PlayerListItem>();
 
-			/*XmlSerializer xs = new XmlSerializer(typeof(CSettings));
-			TextWriter tw = new StreamWriter(@"Plugins\TDMsettings.xml");
-			settings = new CSettings();
-			xs.Serialize(tw, settings);
-			tw.Flush();
-			tw.Close();
-			settings = null;*/
-
-			LoadSettings();
 			LoadStatus();
-			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", settings.LogFileName);
+			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", instance.Configuration.Instance.LogFileName);
 			UnturnedPlayerEvents.OnPlayerDeath += UnturnedPlayerEvents_OnPlayerDeath;
 			U.Events.OnPlayerConnected += UnturnedEvents_OnPlayerConnected;
 			U.Events.OnPlayerDisconnected += UnturnedEvents_OnPlayerDisconnected;
@@ -61,13 +50,12 @@ namespace TDM
 
 		protected override void Unload()
 		{
-			LogThis(DateTime.Now.ToString("s") + " TDM Unloaded", settings.LogFileName);
+			LogThis(DateTime.Now.ToString("s") + " TDM Unloaded", instance.Configuration.Instance.LogFileName);
 			UnturnedPlayerEvents.OnPlayerDeath -= UnturnedPlayerEvents_OnPlayerDeath;
 			U.Events.OnPlayerConnected -= UnturnedEvents_OnPlayerConnected;
 			U.Events.OnPlayerDisconnected -= UnturnedEvents_OnPlayerDisconnected;
 
 			instance = null;
-			settings = null;
 			status = null;
 			playerList = null;
 		}
@@ -77,18 +65,18 @@ namespace TDM
 		{
 			try
 			{
-				LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + cause.ToString() + ";" + murderer.ToString() + ";", settings.FragLogFileName);
+				LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + cause.ToString() + ";" + murderer.ToString() + ";", instance.Configuration.Instance.FragLogFileName);
 
 				if (!status.isActive)
 					return;
 
-				if (player.SteamGroupID.m_SteamID == settings.TeamASteamId && status.isActive)
+				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamASteamId && status.isActive)
 				{
 					status.teamBScore += 1;
 					SaveStatus();
 					UnturnedChat.Say("SCORE: " + status.teamAScore.ToString() + " : " + status.teamBScore.ToString() + " - Team B scored a point!");
 				}
-				if (player.SteamGroupID.m_SteamID == settings.TeamBSteamId && status.isActive)
+				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamBSteamId && status.isActive)
 				{
 					status.teamAScore += 1;
 					SaveStatus();
@@ -104,40 +92,34 @@ namespace TDM
 
 		private void UnturnedEvents_OnPlayerConnected(UnturnedPlayer player)
 		{
-			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", settings.FragLogFileName);
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", instance.Configuration.Instance.FragLogFileName);
 
 			playerList.Add(new PlayerListItem(player.CharacterName, player.CSteamID.m_SteamID, player.SteamGroupID.m_SteamID));
 
-			if (player.SteamGroupID.m_SteamID == settings.TeamASteamId)
+			if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamASteamId)
 			{
 				UnturnedChat.Say(player.CharacterName + " has joined team A");
 			}
-			else if (player.SteamGroupID.m_SteamID == settings.TeamBSteamId)
+			else if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamBSteamId)
 			{
 				UnturnedChat.Say(player.CharacterName + " has joined team B");
 			}
 			else
 			{
 				UnturnedChat.Say(player.CharacterName + " haven't set their team setting correctly."
-								+ (settings.kickPlayerWithInvalidTeam ? (" Kicking in " + settings.kickDelaySeconds.ToString()) + " seconds" : ""));
-				if (settings.kickPlayerWithInvalidTeam)
+								+ (instance.Configuration.Instance.kickPlayerWithInvalidTeam ? (" Kicking in " + instance.Configuration.Instance.kickDelaySeconds.ToString()) + " seconds" : ""));
+				if (instance.Configuration.Instance.kickPlayerWithInvalidTeam)
 				{
-					StartCoroutine(KickPlayer(player, settings.kickDelaySeconds, "   To play on this server please select one of these groups as primary in your Unturned settings (Survivors -> Group -> Group):\n"
-						+ settings.TeamASteamUri + "    " + settings.TeamBSteamUri));
+					StartCoroutine(KickPlayer(player, instance.Configuration.Instance.kickDelaySeconds, "   To play on this server please select one of these groups as primary in your Unturned settings (Survivors -> Group -> Group):\n"
+						+ instance.Configuration.Instance.TeamASteamUri + "    " + instance.Configuration.Instance.TeamBSteamUri));
 				}
 			}
 		}
 
 
-		//private static bool hasSpecificId(UInt64 steamID, PlayerListItem item)
-		//{
-		//	return (item.steamID == steamID);
-		//}
-
-
 		private void UnturnedEvents_OnPlayerDisconnected(UnturnedPlayer player)
 		{
-			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", settings.FragLogFileName);
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", instance.Configuration.Instance.FragLogFileName);
 			playerList.RemoveAll(item => item.steamID == player.CSteamID.m_SteamID);
 		}
 
@@ -145,7 +127,7 @@ namespace TDM
 		public void SaveStatus()
 		{
 			XmlSerializer xs = new XmlSerializer(typeof(CStatus));
-			TextWriter tw = new StreamWriter(settings.StatusFileName);
+			TextWriter tw = new StreamWriter(instance.Configuration.Instance.StatusFileName);
 			xs.Serialize(tw, status);
 			tw.Flush();
 			tw.Close();
@@ -157,7 +139,7 @@ namespace TDM
 			XmlSerializer xs = new XmlSerializer(typeof(CStatus));
 			try
 			{
-				StreamReader sr = new StreamReader(settings.StatusFileName);
+				StreamReader sr = new StreamReader(instance.Configuration.Instance.StatusFileName);
 				status = (CStatus)xs.Deserialize(sr);
 				sr.Close();
 			}
@@ -168,32 +150,9 @@ namespace TDM
 
 			if (status == null)
 			{
-				LogThis(DateTime.Now.ToString("s") + " No status loaded - using default", settings.LogFileName);
+				LogThis(DateTime.Now.ToString("s") + " No status loaded - using default", instance.Configuration.Instance.LogFileName);
 				status = new CStatus();
 				SaveStatus();
-			}
-
-		}
-
-
-		public void LoadSettings()
-		{
-			XmlSerializer xs = new XmlSerializer(typeof(CSettings));
-			try
-			{
-				StreamReader sr = new StreamReader(@"Plugins\TDMsettings.xml");
-				settings = (CSettings)xs.Deserialize(sr);
-				sr.Close();
-			}
-			catch (Exception ex)
-			{
-				Rocket.Core.Logging.Logger.LogException(ex, ex.Message);
-			}
-
-			if (settings == null)
-			{
-				LogThis(DateTime.Now.ToString("s") + " No settings loaded - using default", settings.LogFileName);
-				settings = new CSettings();
 			}
 
 		}
@@ -203,13 +162,13 @@ namespace TDM
 		{
 			if ((DateTime.Now - lastCalled).Seconds >= 1) //Check once per second.
 			{
-				if (DateTime.Now.CompareTo(settings.startTime) >= 0 && DateTime.Now.CompareTo(settings.endTime) <= 0 && status.isActive == false)
+				if (DateTime.Now.CompareTo(instance.Configuration.Instance.startTime) >= 0 && DateTime.Now.CompareTo(instance.Configuration.Instance.endTime) <= 0 && status.isActive == false)
 				{
 					status.isActive = true;
 					UnturnedChat.Say("MATCH BEGINS");
 				}
 
-				if (status.isActive == true && DateTime.Now.CompareTo(settings.endTime) >= 0)
+				if (status.isActive == true && DateTime.Now.CompareTo(instance.Configuration.Instance.endTime) >= 0)
 				{
 					status.isActive = false;
 					UnturnedChat.Say("MATCH FINISHED");

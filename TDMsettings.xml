@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LogFileName>Logs\TDM.log</LogFileName>
+  <FragLogFileName>Logs\TDMDeaths.log</FragLogFileName>
+  <StatusFileName>Plugins\TDMstatus.xml</StatusFileName>
+  <TeamASteamUri>http://steamcommunity.com/groups/YARR-240</TeamASteamUri>
+  <TeamASteamId>103582791457241638</TeamASteamId>
+  <TeamBSteamUri>http://steamcommunity.com/groups/YARR-240-B</TeamBSteamUri>
+  <TeamBSteamId>103582791457591564</TeamBSteamId>
+  <kickPlayerWithInvalidTeam>true</kickPlayerWithInvalidTeam>
+  <kickDelaySeconds>10</kickDelaySeconds>
+  <startTime>2017-10-14T16:00:00.0</startTime>
+  <endTime>9999-12-31T23:59:59.9999999</endTime>
+</CSettings>
