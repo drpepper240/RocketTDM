@@ -6,13 +6,13 @@ A plugin for Rocket that provides Team Deathmatch gamemode:
 - Optional autokick for players not belonging to these groups.
 - Optional timer for match control: the plugin will keep the score during a specified time interval (provided in the config file) only.
 - Death logging (separate configurable CSV-like logfile).
-#### Commands:
+### Commands:
 **/tdm** - print match status, score and time from/to match start and end to chat
 
 **/tdm a** - print players and score for Team A
 
 **/tdm b** - print players and score for Team B
 
-#### Notes:
+### Notes:
 - Does not use Translations file, all strings are hardcoded.
 - The score has to be reset manually.
