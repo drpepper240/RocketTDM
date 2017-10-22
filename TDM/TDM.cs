@@ -14,7 +14,7 @@ using Rocket.Unturned;
 using Rocket.Unturned.Events;
 using Rocket.Unturned.Player;
 using Rocket.Unturned.Chat;
-
+using SDG.Unturned;
 
 /// <summary>
 /// Basic Team Deathmatch plugin for Rocket https://github.com/RocketMod/Rocket
@@ -29,14 +29,14 @@ namespace TDM
 
 		public static TDM instance;
 
-		public List<PlayerListItem> playerList;
+		public Dictionary<CSteamID, PlayerListItem> playerList;
 
 
 		protected override void Load()
 		{
 			instance = this;
 			lastCalled = DateTime.Now;
-			playerList = new List<PlayerListItem>();
+			playerList = new Dictionary<CSteamID, PlayerListItem>();
 
 			LoadStatus();
 			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", instance.Configuration.Instance.LogFileName);
@@ -74,13 +74,13 @@ namespace TDM
 				{
 					status.teamBScore += 1;
 					SaveStatus();
-					UnturnedChat.Say("SCORE: " + status.teamAScore.ToString() + " : " + status.teamBScore.ToString() + " - Team B scored a point!");
+					UnturnedChat.Say("SCORE: " + status.teamAScore.ToString() + " : " + status.teamBScore.ToString() + " - Team B scored a point!", TDM.instance.Configuration.Instance.scoreColor);
 				}
 				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamBSteamId && status.isActive)
 				{
 					status.teamAScore += 1;
 					SaveStatus();
-					UnturnedChat.Say("SCORE: " + status.teamAScore.ToString() + " : " + status.teamBScore.ToString() + " - Team A scored a point!");
+					UnturnedChat.Say("SCORE: " + status.teamAScore.ToString() + " : " + status.teamBScore.ToString() + " - Team A scored a point!", TDM.instance.Configuration.Instance.scoreColor);
 				}
 			}
 			catch (Exception ex)
@@ -94,20 +94,20 @@ namespace TDM
 		{
 			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", instance.Configuration.Instance.FragLogFileName);
 
-			playerList.Add(new PlayerListItem(player.CharacterName, player.CSteamID.m_SteamID, player.SteamGroupID.m_SteamID));
+			UpdatePlayerList();
 
 			if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamASteamId)
 			{
-				UnturnedChat.Say(player.CharacterName + " has joined team A");
+				UnturnedChat.Say(player.CharacterName + " has joined team A", TDM.instance.Configuration.Instance.messageColor);
 			}
 			else if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamBSteamId)
 			{
-				UnturnedChat.Say(player.CharacterName + " has joined team B");
+				UnturnedChat.Say(player.CharacterName + " has joined team B", TDM.instance.Configuration.Instance.messageColor);
 			}
 			else
 			{
 				UnturnedChat.Say(player.CharacterName + " haven't set their team setting correctly."
-								+ (instance.Configuration.Instance.kickPlayerWithInvalidTeam ? (" Kicking in " + instance.Configuration.Instance.kickDelaySeconds.ToString()) + " seconds" : ""));
+								+ (instance.Configuration.Instance.kickPlayerWithInvalidTeam ? (" Kicking in " + instance.Configuration.Instance.kickDelaySeconds.ToString()) + " seconds" : ""), TDM.instance.Configuration.Instance.messageColor);
 				if (instance.Configuration.Instance.kickPlayerWithInvalidTeam)
 				{
 					StartCoroutine(KickPlayer(player, instance.Configuration.Instance.kickDelaySeconds, "   To play on this server please select one of these groups as primary in your Unturned settings (Survivors -> Group -> Group):\n"
@@ -120,7 +120,27 @@ namespace TDM
 		private void UnturnedEvents_OnPlayerDisconnected(UnturnedPlayer player)
 		{
 			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", instance.Configuration.Instance.FragLogFileName);
-			playerList.RemoveAll(item => item.steamID == player.CSteamID.m_SteamID);
+			UpdatePlayerList();
+		}
+
+
+		public void UpdatePlayerList()
+		{
+			Dictionary<CSteamID, PlayerListItem> newPlayerList = new Dictionary<CSteamID, PlayerListItem>();
+			foreach (SteamPlayer p in Provider.clients)
+			{
+				PlayerListItem item = null;
+
+				if (playerList.TryGetValue(p.playerID.steamID, out item))
+				{
+					newPlayerList.Add(p.playerID.steamID, item);
+				}
+				else 
+				{
+					newPlayerList.Add(p.playerID.steamID, new PlayerListItem(p.playerID.characterName, p.playerID.group.m_SteamID));
+				}
+			}
+			playerList = newPlayerList;
 		}
 
 
@@ -160,24 +180,27 @@ namespace TDM
 
 		void FixedUpdate()
 		{
+			if (instance == null)
+				return;
+
 			if ((DateTime.Now - lastCalled).Seconds >= 1) //Check once per second.
 			{
 				if (DateTime.Now.CompareTo(instance.Configuration.Instance.startTime) >= 0 && DateTime.Now.CompareTo(instance.Configuration.Instance.endTime) <= 0 && status.isActive == false)
 				{
 					status.isActive = true;
-					UnturnedChat.Say("MATCH BEGINS");
+					UnturnedChat.Say("MATCH BEGINS", TDM.instance.Configuration.Instance.messageColor);
 				}
 
 				if (status.isActive == true && DateTime.Now.CompareTo(instance.Configuration.Instance.endTime) >= 0)
 				{
 					status.isActive = false;
-					UnturnedChat.Say("MATCH FINISHED");
+					UnturnedChat.Say("MATCH FINISHED", TDM.instance.Configuration.Instance.messageColor);
 					string result = "DRAW";
 					if (status.teamAScore > status.teamBScore)
 						result = "TEAM A WON";
 					if (status.teamAScore < status.teamBScore)
 						result = "TEAM B WON";
-					UnturnedChat.Say("result: " + result);
+					UnturnedChat.Say("result: " + result, TDM.instance.Configuration.Instance.scoreColor);
 				}
 
 				lastCalled = DateTime.Now;

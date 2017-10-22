@@ -13,10 +13,10 @@ namespace TDM
 		public UInt64 teamSteamID;
 		public int score;
 
-		public PlayerListItem(string name, UInt64 ID, UInt64 teamID)
+		public PlayerListItem(string name, UInt64 teamID)
 		{
 			characterName = name;
-			steamID = ID;
+			//steamID = ID;
 			teamSteamID = teamID;
 		}
 	}

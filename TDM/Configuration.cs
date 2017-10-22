@@ -32,6 +32,9 @@ namespace TDM
 		public DateTime startTime;
 		public DateTime endTime;
 
+		public UnityEngine.Color messageColor;
+		public UnityEngine.Color scoreColor;
+
 
 		public void LoadDefaults()
 		{
@@ -49,6 +52,9 @@ namespace TDM
 
 			startTime = DateTime.MinValue;
 			endTime = DateTime.MaxValue;
+
+			messageColor = UnityEngine.Color.gray;
+			scoreColor = UnityEngine.Color.magenta;
 		}
 	}
 }

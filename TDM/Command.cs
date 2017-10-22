@@ -50,38 +50,40 @@ namespace TDM
 
 			if (command == null || command.Length == 0)
 			{
-				UnturnedChat.Say(caller, "Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"));
-				UnturnedChat.Say(caller, "SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString(), Color.red);
-				UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.Configuration.Instance.startTime - DateTime.Now), true, true));
-				UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.Configuration.Instance.endTime - DateTime.Now), true, true));
+				UnturnedChat.Say(caller, "Team Deathmatch status: " + (TDM.instance.status.isActive ? "ACTIVE" : "INACTIVE"), TDM.instance.Configuration.Instance.messageColor);
+				UnturnedChat.Say(caller, "SCORE: " + TDM.instance.status.teamAScore.ToString() + " : " + TDM.instance.status.teamBScore.ToString(), TDM.instance.Configuration.Instance.scoreColor);
+				UnturnedChat.Say(caller, "START TIME: " + TimeSpanToHumanReadableString((TDM.instance.Configuration.Instance.startTime - DateTime.Now), true, true), TDM.instance.Configuration.Instance.messageColor);
+				UnturnedChat.Say(caller, "END TIME: " + TimeSpanToHumanReadableString((TDM.instance.Configuration.Instance.endTime - DateTime.Now), true, true), TDM.instance.Configuration.Instance.messageColor);
 			}
 			else if (command.Length == 1 && (command.ElementAt(0) == "a" || command.ElementAt(0) == "A"))
 			{
-				UnturnedChat.Say(caller, "Team A score: " + TDM.instance.status.teamAScore.ToString(), Color.red);
+				UnturnedChat.Say(caller, "Team A score: " + TDM.instance.status.teamAScore.ToString(), TDM.instance.Configuration.Instance.scoreColor);
 				string playerString = "";
+				TDM.instance.UpdatePlayerList();
 				if (TDM.instance.playerList != null && TDM.instance.Configuration.Instance != null)
-					foreach (PlayerListItem i in TDM.instance.playerList)
+					foreach (var i in TDM.instance.playerList)
 					{
-						if (i.teamSteamID == TDM.instance.Configuration.Instance.TeamASteamId)
-							playerString = playerString + i.characterName + ", ";
+						if (i.Value.teamSteamID == TDM.instance.Configuration.Instance.TeamASteamId)
+							playerString = playerString + i.Value.characterName + ", ";
 					}
-				UnturnedChat.Say(caller, "Team A players: " + playerString);
+				UnturnedChat.Say(caller, "Team A players: " + playerString, TDM.instance.Configuration.Instance.messageColor);
 			}
 			else if (command.Length == 1 && (command.ElementAt(0) == "b" || command.ElementAt(0) == "B"))
 			{
-				UnturnedChat.Say(caller, "Team B score: " + TDM.instance.status.teamBScore.ToString(), Color.red);
+				UnturnedChat.Say(caller, "Team B score: " + TDM.instance.status.teamBScore.ToString(), TDM.instance.Configuration.Instance.scoreColor);
 				string playerString = "";
+				TDM.instance.UpdatePlayerList();
 				if (TDM.instance.playerList != null && TDM.instance.Configuration.Instance != null)
-					foreach (PlayerListItem i in TDM.instance.playerList)
+					foreach (var i in TDM.instance.playerList)
 					{
-						if (i.teamSteamID == TDM.instance.Configuration.Instance.TeamBSteamId)
-							playerString = playerString + i.characterName + ", ";
+						if (i.Value.teamSteamID == TDM.instance.Configuration.Instance.TeamBSteamId)
+							playerString = playerString + i.Value.characterName + ", ";
 					}
-				UnturnedChat.Say(caller, "Team B players: " + playerString);
+				UnturnedChat.Say(caller, "Team B players: " + playerString, TDM.instance.Configuration.Instance.messageColor);
 			}
 			else
 			{
-				UnturnedChat.Say(caller, "Unknown parameter");
+				UnturnedChat.Say(caller, "Unknown parameter", TDM.instance.Configuration.Instance.messageColor);
 			}
 		}
 
