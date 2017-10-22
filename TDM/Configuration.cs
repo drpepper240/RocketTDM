@@ -53,8 +53,8 @@ namespace TDM
 			startTime = DateTime.MinValue;
 			endTime = DateTime.MaxValue;
 
-			messageColor = UnityEngine.Color.gray;
-			scoreColor = UnityEngine.Color.magenta;
+			messageColor = new UnityEngine.Color(0, 128, 0, 0);
+			scoreColor = new UnityEngine.Color(155, 0, 255, 0);
 		}
 	}
 }
