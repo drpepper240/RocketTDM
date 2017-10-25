@@ -63,7 +63,7 @@ namespace TDM
 				if (TDM.instance.playerList != null && TDM.instance.Configuration.Instance != null)
 					foreach (var i in TDM.instance.playerList)
 					{
-						if (i.Value.teamSteamID == TDM.instance.Configuration.Instance.TeamASteamId)
+						if (i.Value.teamSteamID == TDM.instance.Configuration.Instance.teamASteamId)
 							playerString = playerString + i.Value.characterName + ", ";
 					}
 				UnturnedChat.Say(caller, "Team A players: " + playerString, TDM.instance.Configuration.Instance.messageColor);
@@ -76,7 +76,7 @@ namespace TDM
 				if (TDM.instance.playerList != null && TDM.instance.Configuration.Instance != null)
 					foreach (var i in TDM.instance.playerList)
 					{
-						if (i.Value.teamSteamID == TDM.instance.Configuration.Instance.TeamBSteamId)
+						if (i.Value.teamSteamID == TDM.instance.Configuration.Instance.teamBSteamId)
 							playerString = playerString + i.Value.characterName + ", ";
 					}
 				UnturnedChat.Say(caller, "Team B players: " + playerString, TDM.instance.Configuration.Instance.messageColor);

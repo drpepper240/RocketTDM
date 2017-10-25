@@ -9,20 +9,20 @@ namespace TDM
 	public class Configuration : IRocketPluginConfiguration
 	{
 		//Date-time logfile for this plugin
-		public string LogFileName;
+		public string logFileName;
 
 		//Csv-like logfile for kills/deaths
-		public string FragLogFileName;
+		public string fragLogFileName;
 
 		//Status file location
-		public string StatusFileName;
+		public string statusFileName;
 
 		//Teams
-		public string TeamASteamUri;
-		public UInt64 TeamASteamId;
+		public string teamASteamUri;
+		public UInt64 teamASteamId;
 
-		public string TeamBSteamUri;
-		public UInt64 TeamBSteamId;
+		public string teamBSteamUri;
+		public UInt64 teamBSteamId;
 
 		//autokick for plauers not belonging to either Team A or Team B
 		public bool kickPlayerWithInvalidTeam;
@@ -38,14 +38,14 @@ namespace TDM
 
 		public void LoadDefaults()
 		{
-			LogFileName = @"Logs\TDM.log";
-			FragLogFileName = @"Logs\TDMDeaths.log";
-			StatusFileName = @"Plugins\TDMstatus.xml";
+			logFileName = @"Logs\TDM.log";
+			fragLogFileName = @"Logs\TDMDeaths.log";
+			statusFileName = @"Plugins\TDMstatus.xml";
 
-			TeamASteamUri = @"http://steamcommunity.com/groups/YARR-240";
-			TeamASteamId = 103582791457241638;
-			TeamBSteamUri = @"http://steamcommunity.com/groups/YARR-240-B";
-			TeamBSteamId = 103582791457591564;
+			teamASteamUri = @"http://steamcommunity.com/groups/YARR-240";
+			teamASteamId = 103582791457241638;
+			teamBSteamUri = @"http://steamcommunity.com/groups/YARR-240-B";
+			teamBSteamId = 103582791457591564;
 
 			kickPlayerWithInvalidTeam = true;
 			kickDelaySeconds = 10;

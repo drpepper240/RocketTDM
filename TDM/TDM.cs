@@ -39,7 +39,7 @@ namespace TDM
 			playerList = new Dictionary<CSteamID, PlayerListItem>();
 
 			LoadStatus();
-			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", instance.Configuration.Instance.LogFileName);
+			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", instance.Configuration.Instance.logFileName);
 			UnturnedPlayerEvents.OnPlayerDeath += UnturnedPlayerEvents_OnPlayerDeath;
 			U.Events.OnPlayerConnected += UnturnedEvents_OnPlayerConnected;
 			U.Events.OnPlayerDisconnected += UnturnedEvents_OnPlayerDisconnected;
@@ -50,7 +50,7 @@ namespace TDM
 
 		protected override void Unload()
 		{
-			LogThis(DateTime.Now.ToString("s") + " TDM Unloaded", instance.Configuration.Instance.LogFileName);
+			LogThis(DateTime.Now.ToString("s") + " TDM Unloaded", instance.Configuration.Instance.logFileName);
 			UnturnedPlayerEvents.OnPlayerDeath -= UnturnedPlayerEvents_OnPlayerDeath;
 			U.Events.OnPlayerConnected -= UnturnedEvents_OnPlayerConnected;
 			U.Events.OnPlayerDisconnected -= UnturnedEvents_OnPlayerDisconnected;
@@ -65,18 +65,18 @@ namespace TDM
 		{
 			try
 			{
-				LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + cause.ToString() + ";" + murderer.ToString() + ";", instance.Configuration.Instance.FragLogFileName);
+				LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + cause.ToString() + ";" + murderer.ToString() + ";", instance.Configuration.Instance.fragLogFileName);
 
 				if (!status.isActive)
 					return;
 
-				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamASteamId && status.isActive)
+				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.teamASteamId && status.isActive)
 				{
 					status.teamBScore += 1;
 					SaveStatus();
 					UnturnedChat.Say("SCORE: " + status.teamAScore.ToString() + " : " + status.teamBScore.ToString() + " - Team B scored a point!", TDM.instance.Configuration.Instance.scoreColor);
 				}
-				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamBSteamId && status.isActive)
+				if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.teamBSteamId && status.isActive)
 				{
 					status.teamAScore += 1;
 					SaveStatus();
@@ -92,15 +92,15 @@ namespace TDM
 
 		private void UnturnedEvents_OnPlayerConnected(UnturnedPlayer player)
 		{
-			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", instance.Configuration.Instance.FragLogFileName);
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", instance.Configuration.Instance.fragLogFileName);
 
 			UpdatePlayerList();
 
-			if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamASteamId)
+			if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.teamASteamId)
 			{
 				UnturnedChat.Say(player.CharacterName + " has joined team A", TDM.instance.Configuration.Instance.messageColor);
 			}
-			else if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.TeamBSteamId)
+			else if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.teamBSteamId)
 			{
 				UnturnedChat.Say(player.CharacterName + " has joined team B", TDM.instance.Configuration.Instance.messageColor);
 			}
@@ -111,7 +111,7 @@ namespace TDM
 				if (instance.Configuration.Instance.kickPlayerWithInvalidTeam)
 				{
 					StartCoroutine(KickPlayer(player, instance.Configuration.Instance.kickDelaySeconds, "   To play on this server please select one of these groups as primary in your Unturned settings (Survivors -> Group -> Group):\n"
-						+ instance.Configuration.Instance.TeamASteamUri + "    " + instance.Configuration.Instance.TeamBSteamUri));
+						+ instance.Configuration.Instance.teamASteamUri + "    " + instance.Configuration.Instance.teamBSteamUri));
 				}
 			}
 		}
@@ -119,7 +119,7 @@ namespace TDM
 
 		private void UnturnedEvents_OnPlayerDisconnected(UnturnedPlayer player)
 		{
-			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", instance.Configuration.Instance.FragLogFileName);
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Disconnected" + ";" + ";", instance.Configuration.Instance.fragLogFileName);
 			UpdatePlayerList();
 		}
 
@@ -147,7 +147,7 @@ namespace TDM
 		public void SaveStatus()
 		{
 			XmlSerializer xs = new XmlSerializer(typeof(CStatus));
-			TextWriter tw = new StreamWriter(instance.Configuration.Instance.StatusFileName);
+			TextWriter tw = new StreamWriter(instance.Configuration.Instance.statusFileName);
 			xs.Serialize(tw, status);
 			tw.Flush();
 			tw.Close();
@@ -159,7 +159,7 @@ namespace TDM
 			XmlSerializer xs = new XmlSerializer(typeof(CStatus));
 			try
 			{
-				StreamReader sr = new StreamReader(instance.Configuration.Instance.StatusFileName);
+				StreamReader sr = new StreamReader(instance.Configuration.Instance.statusFileName);
 				status = (CStatus)xs.Deserialize(sr);
 				sr.Close();
 			}
@@ -170,7 +170,7 @@ namespace TDM
 
 			if (status == null)
 			{
-				LogThis(DateTime.Now.ToString("s") + " No status loaded - using default", instance.Configuration.Instance.LogFileName);
+				LogThis(DateTime.Now.ToString("s") + " No status loaded - using default", instance.Configuration.Instance.logFileName);
 				status = new CStatus();
 				SaveStatus();
 			}
