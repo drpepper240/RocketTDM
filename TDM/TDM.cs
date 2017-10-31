@@ -29,14 +29,14 @@ namespace TDM
 
 		public static TDM instance;
 
-		public Dictionary<CSteamID, PlayerListItem> playerList;
+		public Dictionary<ulong, PlayerListItem> playerList;
 
 
 		protected override void Load()
 		{
 			instance = this;
 			lastCalled = DateTime.Now;
-			playerList = new Dictionary<CSteamID, PlayerListItem>();
+			playerList = new Dictionary<ulong, PlayerListItem>();
 
 			LoadStatus();
 			LogThis(DateTime.Now.ToString("s") + " TDM Loaded", instance.Configuration.Instance.logFileName);
@@ -92,21 +92,21 @@ namespace TDM
 
 		private void UnturnedEvents_OnPlayerConnected(UnturnedPlayer player)
 		{
-			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.CharacterName + ";" + player.IP + ";", instance.Configuration.Instance.fragLogFileName);
+			LogThis(DateTime.Now.ToString("s") + ";" + player.CSteamID.ToString() + ";" + player.SteamGroupID.ToString() + ";" + "Connected" + ";" + ";" + player.SteamName + ";" + player.IP + ";", instance.Configuration.Instance.fragLogFileName);
 
 			UpdatePlayerList();
 
 			if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.teamASteamId)
 			{
-				UnturnedChat.Say(player.CharacterName + " has joined team A", TDM.instance.Configuration.Instance.messageColor);
+				UnturnedChat.Say(player.SteamName + " has joined team A", TDM.instance.Configuration.Instance.messageColor);
 			}
 			else if (player.SteamGroupID.m_SteamID == instance.Configuration.Instance.teamBSteamId)
 			{
-				UnturnedChat.Say(player.CharacterName + " has joined team B", TDM.instance.Configuration.Instance.messageColor);
+				UnturnedChat.Say(player.SteamName + " has joined team B", TDM.instance.Configuration.Instance.messageColor);
 			}
 			else
 			{
-				UnturnedChat.Say(player.CharacterName + " haven't set their team setting correctly."
+				UnturnedChat.Say(player.SteamName + " haven't set their team setting correctly."
 								+ (instance.Configuration.Instance.kickPlayerWithInvalidTeam ? (" Kicking in " + instance.Configuration.Instance.kickDelaySeconds.ToString()) + " seconds" : ""), TDM.instance.Configuration.Instance.messageColor);
 				if (instance.Configuration.Instance.kickPlayerWithInvalidTeam)
 				{
@@ -126,21 +126,11 @@ namespace TDM
 
 		public void UpdatePlayerList()
 		{
-			Dictionary<CSteamID, PlayerListItem> newPlayerList = new Dictionary<CSteamID, PlayerListItem>();
+			playerList.Clear();
 			foreach (SteamPlayer p in Provider.clients)
 			{
-				PlayerListItem item = null;
-
-				if (playerList.TryGetValue(p.playerID.steamID, out item))
-				{
-					newPlayerList.Add(p.playerID.steamID, item);
-				}
-				else 
-				{
-					newPlayerList.Add(p.playerID.steamID, new PlayerListItem(p.playerID.characterName, p.playerID.group.m_SteamID));
-				}
+				playerList.Add(p.playerID.steamID.m_SteamID, new PlayerListItem(p.playerID.playerName, p.playerID.group.m_SteamID));
 			}
-			playerList = newPlayerList;
 		}
 
 
